@@ -1,0 +1,19 @@
+{
+  "name": "campusflow-college-timetable-hub",
+  "version": "1.0.0",
+  "description": "Comprehensive college timetable and student life hub featuring subjects attendance tracker, clubs management, wellness monitor, and smart weekend suggestions.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "college",
+    "timetable",
+    "attendance-calculator",
+    "clubs-management",
+    "student-wellness",
+    "weekend-planner"
+  ],
+  "author": "CampusFlow",
+  "license": "MIT"
+}

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusFlow — College Timetable & Student Life Hub</title>
+  <meta name="description" content="All-in-one college portal: interactive timetable, subjects & 75% attendance calculator, clubs management, student wellness tracker, and curated weekend suggestions.">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-600 selection:text-white">
+
+  <!-- Top Global Header -->
+  <header class="no-print sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-black tracking-tight gradient-text">CampusFlow</h1>
+            <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold">Semester Hub</span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">Timetable • Subjects & Attendance • Clubs • Health • Weekends</p>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="relative flex-1 max-w-md hidden md:block">
+        <div class="relative">
+          <input type="text" id="global-search" placeholder="Search class, subject, club, or weekend plan... (Ctrl + K)" class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl pl-9 pr-10 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition shadow-inner">
+          <div class="absolute left-3 top-2.5 text-slate-400 pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <kbd class="absolute right-2.5 top-2 text-[10px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded border border-slate-600 font-mono">⌘K</kbd>
+        </div>
+        <!-- Search Results Dropdown -->
+        <div id="search-results-dropdown" class="hidden absolute top-12 left-0 right-0 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden z-50"></div>
+      </div>
+
+      <!-- User Info & Utility Actions -->
+      <div class="flex items-center gap-2.5">
+
+        <!-- Role Switcher (Host vs Student) -->
+        <div class="flex items-center p-1 bg-slate-900 rounded-xl border border-slate-700/80 shadow-inner">
+          <button id="role-host-btn" onclick="toggleUserRole('host')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white shadow-sm" title="Host Mode: Full edit permissions for timetables, departments, and portals">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+            <span class="hidden sm:inline">Host (Admin)</span>
+            <span class="sm:hidden">Host</span>
+          </button>
+          <button id="role-student-btn" onclick="toggleUserRole('student')" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition text-slate-400 hover:text-white" title="Student Mode: Read-only views, machine-automated attendance">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+            <span class="hidden sm:inline">Student</span>
+            <span class="sm:hidden">Student</span>
+          </button>
+        </div>
+        
+        <!-- Student Info Pill -->
+        <button onclick="openProfileModal()" class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/70 transition text-left" title="Click to edit student profile">
+          <div class="w-7 h-7 rounded-lg bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 flex items-center justify-center font-bold text-xs">
+            AR
+          </div>
+          <div class="hidden xl:block">
+            <span id="student-name-display" class="text-xs font-semibold text-white block leading-tight">Alex Rivera</span>
+            <span id="student-details-display" class="text-[10px] text-slate-400 font-mono block">CS & Eng • Sem 5</span>
+          </div>
+        </button>
+
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle-btn" onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-800/70 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 transition" title="Toggle Dark/Light Mode">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+        </button>
+
+        <!-- Data Backup & Reset Dropdown -->
+        <div class="relative group">
+          <button class="p-2 rounded-xl bg-slate-800/70 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 transition" title="Backup & Data Options">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+          </button>
+          <div class="hidden group-hover:block absolute right-0 top-10 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-1.5 text-xs z-50">
+            <button onclick="window.store.exportData()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 transition flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Export JSON Backup
+            </button>
+            <label class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 transition flex items-center gap-2 cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Import JSON Backup
+              <input type="file" accept=".json" onchange="handleImportJSON(event)" class="hidden">
+            </label>
+            <div class="my-1 border-t border-slate-800"></div>
+            <button onclick="resetAllDataConfirm()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-red-500/10 text-red-400 transition flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
+              Reset to Demo Schedule
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile Drawer Toggle -->
+        <button onclick="document.getElementById('mobile-drawer').classList.toggle('hidden')" class="p-2 rounded-xl bg-slate-800 md:hidden text-slate-300">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Main Navigation Bar (Pill tabs) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-800/60 overflow-x-auto no-scrollbar">
+      <nav class="flex items-center space-x-2 py-2">
+        <button data-tab="timetable" class="nav-tab px-4 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 transition whitespace-nowrap active">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span>Weekly Timetable</span>
+        </button>
+
+        <button data-tab="departments" id="nav-tab-departments" class="nav-tab px-4 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition whitespace-nowrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><path d="M9 9h1"></path><path d="M9 13h1"></path><path d="M9 17h1"></path></svg>
+          <span>Departments & Clash Radar</span>
+          <span class="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">Host Only</span>
+        </button>
+
+        <button data-tab="rooms" class="nav-tab px-4 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition whitespace-nowrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M19 21v-4"></path><path d="M19 17a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v4"></path><path d="M3 7v14"></path><path d="M7 3h10a2 2 0 0 1 2 2v16"></path></svg>
+          <span>Room & Faculty Free</span>
+        </button>
+
+        <button data-tab="biometrics" class="nav-tab px-4 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition whitespace-nowrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          <span>Face-Scan Machine</span>
+        </button>
+
+        <button data-tab="subjects" class="nav-tab px-4 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition whitespace-nowrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          <span>Subjects & Attendance</span>
+        </button>
+
+        <button data-tab="clubs" class="nav-tab px-4 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition whitespace-nowrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>Clubs & Societies</span>
+        </button>
+
+        <button data-tab="opd" class="nav-tab px-4 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition whitespace-nowrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          <span>OPD Clinical Schedule</span>
+        </button>
+
+        <button data-tab="weekend" class="nav-tab px-4 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition whitespace-nowrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+          <span>Weekend Suggestions</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-drawer" class="hidden md:hidden bg-slate-900 border-b border-slate-800 p-4 space-y-2">
+      <button data-tab="timetable" class="mobile-nav-tab w-full text-left px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-slate-800">📅 Weekly Timetable</button>
+      <button data-tab="departments" id="mobile-nav-tab-departments" class="mobile-nav-tab w-full text-left px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-slate-800 flex items-center justify-between">
+        <span>🏛️ Departments & Clash Radar</span>
+        <span class="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">Host Only</span>
+      </button>
+      <button data-tab="rooms" class="mobile-nav-tab w-full text-left px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-slate-800">🚪 Room & Faculty Free Periods</button>
+      <button data-tab="biometrics" class="mobile-nav-tab w-full text-left px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-slate-800">📷 Face-Scan Machine Gateway</button>
+      <button data-tab="subjects" class="mobile-nav-tab w-full text-left px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-slate-800">📚 Subjects & Attendance Calculator</button>
+      <button data-tab="clubs" class="mobile-nav-tab w-full text-left px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-slate-800">👥 Clubs & Societies</button>
+      <button data-tab="opd" class="mobile-nav-tab w-full text-left px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-slate-800">🏥 OPD Clinical Schedule</button>
+      <button data-tab="weekend" class="mobile-nav-tab w-full text-left px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-slate-800">🎒 Weekend Suggestions</button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+
+    <!-- 1. Timetable Section -->
+    <section id="timetable-section" class="space-y-6">
+      <!-- Live class status alert -->
+      <div id="live-class-alert" class="mb-6"></div>
+
+      <!-- Timetable Dynamic Content -->
+      <div id="timetable-content"></div>
+    </section>
+
+    <!-- 2. Departments & Intersections Section -->
+    <section id="departments-section" class="hidden space-y-6">
+      <div id="departments-content"></div>
+    </section>
+
+    <!-- 3. Rooms & Faculty Free Periods Section -->
+    <section id="rooms-section" class="hidden space-y-6">
+      <div id="rooms-content"></div>
+    </section>
+
+    <!-- 4. Biometric Face-Scan Machine Section -->
+    <section id="biometrics-section" class="hidden space-y-6">
+      <div id="biometrics-content"></div>
+    </section>
+
+    <!-- 5. Subjects & Attendance Section -->
+    <section id="subjects-section" class="hidden space-y-6">
+      <div id="subjects-content"></div>
+    </section>
+
+    <!-- 6. Clubs Section -->
+    <section id="clubs-section" class="hidden space-y-6">
+      <div id="clubs-content"></div>
+    </section>
+
+    <!-- 7. OPD Clinical Schedule Section -->
+    <section id="opd-section" class="hidden space-y-6">
+      <div id="opd-content"></div>
+    </section>
+
+    <!-- 8. Weekend Suggestions Section -->
+    <section id="weekend-section" class="hidden space-y-6">
+      <div id="weekend-content"></div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="no-print mt-auto py-6 border-t border-slate-800/80 bg-slate-950/60 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>Local Storage active • All timetable & personal data saved securely in your browser</span>
+      </div>
+      <div>
+        Designed for college students • Built for focus, balance & campus success
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/icons.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/timetable.js"></script>
+  <script src="js/departments.js"></script>
+  <script src="js/rooms.js"></script>
+  <script src="js/biometrics.js"></script>
+  <script src="js/subjects.js"></script>
+  <script src="js/clubs.js"></script>
+  <script src="js/opd.js"></script>
+  <script src="js/weekend.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
